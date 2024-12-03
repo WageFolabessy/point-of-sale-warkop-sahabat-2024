@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Peran;
+use App\Notifications\UserNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class KaryawanController extends Controller
 {
@@ -77,6 +79,10 @@ class KaryawanController extends Controller
         $user->foto_profil = $imagePath;
         $user->save();
 
+        // Kirim notifikasi store
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new UserNotification('store', $user));
+
         $id = Auth::id();
         $activity = [
             'id_user' => $id,
@@ -128,6 +134,10 @@ class KaryawanController extends Controller
 
         $user->save();
 
+        // Kirim notifikasi update
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new UserNotification('update', $user));
+
         $id = Auth::id();
         $activity = [
             'id_user' => $id,
@@ -156,6 +166,12 @@ class KaryawanController extends Controller
         $userIdsToDelete = array_filter($request->input('users'), function ($userId) use ($loggedInUserId) {
             return $userId != $loggedInUserId;
         });
+
+        $karyawanNames = User::whereIn('id', $userIdsToDelete)->pluck('nama')->toArray();
+
+        // Kirim notifikasi destroy
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new UserNotification('destroy', $karyawanNames));
 
         $id = Auth::id();
         $activity = [

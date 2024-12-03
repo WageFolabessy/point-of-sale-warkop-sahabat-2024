@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('harga_modal');
             $table->integer('harga_jual');
             $table->text('deskripsi')->nullable();
-            $table->string('foto');
+            $table->string('foto')->nullable();
             $table->timestamps();
             $table->foreign('id_kategori')->references('id')->on('kategoris')->onDelete('cascade');
         });

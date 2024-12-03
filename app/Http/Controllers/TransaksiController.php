@@ -8,11 +8,13 @@ use App\Models\Kategori;
 use App\Models\Meja;
 use App\Models\Menu;
 use App\Models\Transaksi;
+use App\Notifications\TransaksiNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class TransaksiController extends Controller
 {
@@ -90,6 +92,10 @@ class TransaksiController extends Controller
             $detail->save();
         }
 
+        // Kirim notifikasi transaksi baru
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new TransaksiNotification('store', $transaksi));
+
         $id = Auth::id();
         $activity = [
             'id_user' => $id,
@@ -128,6 +134,10 @@ class TransaksiController extends Controller
 
         // Update the transaction
         $transaksi->update($validatedData);
+
+        // Kirim notifikasi pembaruan transaksi
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new TransaksiNotification('update', $transaksi));
 
         $id = Auth::id();
         $activity = [

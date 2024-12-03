@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Kategori;
+use App\Notifications\KategoriNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 
 class KategoriController extends Controller
@@ -44,6 +46,11 @@ class KategoriController extends Controller
         $kategori->deskripsi = $request->deskripsi;
         $kategori->save();
 
+        // Kirim notifikasi store
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new KategoriNotification('store', $kategori));
+
+        // Catat aktivitas
         $id = Auth::id();
         $activity = [
             'id_user' => $id,
@@ -85,6 +92,10 @@ class KategoriController extends Controller
 
         $kategori->save();
 
+        // Kirim notifikasi update
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new KategoriNotification('update', $kategori));
+
         $id = Auth::id();
         $activity = [
             'id_user' => $id,
@@ -109,7 +120,12 @@ class KategoriController extends Controller
         }
 
         $kategoriIdsToDelete = $request->input('kategoris');
+        $kategoriNames = Kategori::whereIn('id', $kategoriIdsToDelete)->pluck('nama')->toArray();
         Kategori::whereIn('id', $kategoriIdsToDelete)->delete();
+
+        // Kirim notifikasi destroy
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new KategoriNotification('destroy', $kategoriNames));
 
         $id = Auth::id();
         $activity = [

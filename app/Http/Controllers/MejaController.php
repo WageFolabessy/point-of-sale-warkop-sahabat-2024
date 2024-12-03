@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Meja;
+use App\Notifications\MejaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 
 class MejaController extends Controller
@@ -39,6 +41,10 @@ class MejaController extends Controller
         $meja = new Meja();
         $meja->nama = $request->nama;
         $meja->save();
+
+        // Kirim notifikasi store
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new MejaNotification('store', $meja));
 
         $id = Auth::id();
         $activity = [
@@ -76,6 +82,10 @@ class MejaController extends Controller
         $meja->nama = $request->nama;
         $meja->save();
 
+        // Kirim notifikasi update
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new MejaNotification('update', $meja));
+
         $id = Auth::id();
         $activity = [
             'id_user' => $id,
@@ -100,7 +110,13 @@ class MejaController extends Controller
         }
 
         $mejaIdsToDelete = $request->input('mejas');
+        $mejaNames = Meja::whereIn('id', $mejaIdsToDelete)->pluck('nama')->toArray();
         Meja::whereIn('id', $mejaIdsToDelete)->delete();
+
+
+        // Kirim notifikasi destroy
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new MejaNotification('destroy', $mejaNames));
 
         $id = Auth::id();
         $activity = [

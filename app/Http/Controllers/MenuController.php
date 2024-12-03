@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Kategori;
 use App\Models\Menu;
+use App\Notifications\MenuNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
@@ -83,6 +85,10 @@ class MenuController extends Controller
         $menu->deskripsi = $validatedData['deskripsi'];
         $menu->foto = $imagePath;
         $menu->save();
+
+        // Kirim notifikasi store
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new MenuNotification('store', $menu));
 
         $id = Auth::id();
         $activity = [
@@ -171,6 +177,10 @@ class MenuController extends Controller
 
         $menu->save();
 
+        // Kirim notifikasi update
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new MenuNotification('update', $menu));
+
         $id = Auth::id();
         $activity = [
             'id_user' => $id,
@@ -185,6 +195,10 @@ class MenuController extends Controller
     {
         $menu = Menu::find($id);
         $menu->delete();
+
+        // Kirim notifikasi destroy
+        $emailTujuan = 'wksahabatptk@gmail.com';
+        Notification::route('mail', $emailTujuan)->notify(new MenuNotification('destroy', $menu));
 
         $id = Auth::id();
         $activity = [
